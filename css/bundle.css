@@ -1,0 +1,29 @@
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+body {
+  font-family: Quicksand;
+}
+
+h1 {
+  text-align: center;
+  background-color: #EEE;
+  padding: 0.5em;
+  border: 1px solid #999;
+  border-radius: 0.5em;
+}
+
+
+table {
+  width: 100%;
+  text-align: center;
+  border: 1px solid #999;
+  border-radius: 0.5em;
+}
+thead {
+  background-color: #EEE;
+
+}
