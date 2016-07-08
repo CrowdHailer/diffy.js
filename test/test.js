@@ -1,70 +1,33 @@
 var assert = require('chai').assert;
 
-var Server = {
-  start: function () {
-    // Property test reduction of history should always return state
-    var state;
-    var history = [];
-    return {
-      getHistory: function () {
-        // optionally pass in as of to start history searcg
-        return history;
-      },
-      saveChangeset: function (patch) {
-        history.push(patch);
-        return {ok: true};
-      }
-    };
-  }
-};
-
-var Client =  {
-  start: function (server) {
-    // record latest server timestamp
-    state = {};
-    var changeset = {}; // Patch, Revision
-    return {
-      setValue: function (key, value) {
-        changeset[key] = {from: state[key], to: value};
-      },
-      getLocalState: function () {
-        var patch = {};
-        Object.keys(changeset).forEach(function(key){
-          if (state[key] === changeset[key].from) {
-            patch[key] = changeset[key].to;
-          } else {
-            patch[key] = {remote: state[key], local: changeset[key].to};
-          }
-        });
-        return Object.assign({}, state, patch);
-      },
-      getChangeset: function () {
-        return changeset;
-      },
-      saveChangeset: function () {
-        response = server.saveChangeset(changeset);
-        if (response.ok) {
-          changeset = {};
-        }
-      },
-      checkServer: function () {
-        var patch = {};
-        server.getHistory().forEach(function (changeset) {
-          Object.keys(changeset).forEach(function(key){
-            patch[key] = changeset[key].to;
-          });
-        });
-        state = Object.assign({}, state, patch);
-      }
-    };
-  }
-};
+var Server = require('./server');
+var Client = require('./client');
 
 describe('Central Server', function () {
-  describe('viewing', function () {
+  // change viewing to version
+  describe('viewing history', function () {
     it('should start with an empty history', function () {
       var server = Server.start({});
       assert.equal(0, server.getHistory().length);
+    });
+  });
+  describe('saving a changeset', function () {
+    it('should return the new version', function () {
+      var server = Server.start();
+      var response = server.saveChangeset({foo: {to: 'initial'}});
+      assert.equal(response.ok, true);
+      assert.equal(response.value, 1);
+    });
+    it('should apply the changeset to recorded state', function () {
+      var server = Server.start();
+      var response = server.saveChangeset({foo: {to: 'initial'}});
+      assert.equal(response.ok, true);
+      assert.equal(server.getState().foo, 'initial');
+    });
+    it('should not save an invalid changeset', function () {
+      var server = Server.start();
+      var response = server.saveChangeset({foo: {from: 'rubbish', to: 'clean'}});
+      assert.equal(response.ok, false);
     });
   });
 });
