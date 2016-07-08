@@ -1,3 +1,9 @@
+// Server Properties
+// For all changesets version identifier and history length are equal.
+// Saving the same change set twice with different version should always be an error.
+// Might need to modify this for sent more than once messages.
+
+
 exports.start = function () {
   // Property test reduction of history should always return state
   var state = {};
