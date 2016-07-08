@@ -15,6 +15,7 @@ function eventsForAttribute (attribute, events) {
   });
 }
 
+
 function Client () {
   var state = {foo: 'initial'}
   var eventsToApply = []
@@ -58,6 +59,55 @@ function Client () {
     }
   }
 }
+
+function startServer () {
+  var state = {foo: 'initial'}
+  var history = []
+  function recordDiff (changes) {
+    var key = changes.key
+    if (state[key] === changes.from) {
+      var t = history.length + 1
+      changes.t = t
+      state[key] = changes.to
+      state.t = t
+      history.push(changes)
+      return state
+    } else {
+      return {
+        status: ''
+      }
+    }
+  }
+  function getState () {
+    // optionally pass in as of
+    return Object.assign({}, state)
+  }
+  return {
+    recordDiff: recordDiff,
+    getState: getState,
+    getHistory: function () {
+      return history
+    }
+  }
+}
+describe('A Server', function () {
+  describe('adding diffs to the history', function () {
+    it('should add valid diffs', function () {
+      // Property test reduction of history should always return state
+      var server = startServer()
+
+      var state = server.recordDiff({key: 'foo', from: 'initial', to: 'second'})
+      console.log(state)
+      assert.equal('second', server.getState().foo)
+      assert.equal(1, server.getHistory().length)
+
+      // this should fail
+      server.recordDiff({key: 'foo', from: 'initial', to: 'third'})
+      assert.equal('second', server.getState().foo)
+      assert.equal(1, server.getHistory().length)
+    })
+  })
+})
 
 describe('Client Server interaction', function() {
   it('should follow this story', function () {
