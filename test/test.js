@@ -2,10 +2,12 @@ var assert = require('chai').assert;
 
 var Server = {
   start: function () {
+    // Property test reduction of history should always return state
     var state
     var history = []
     return {
       getHistory: function () {
+        // optionally pass in as of to start history searcg
         return history
       },
       submitPatch: function (patch) {
@@ -18,6 +20,7 @@ var Server = {
 
 var Client =  {
   start: function (server) {
+    // record latest server timestamp
     state = {}
     var changeSet = {}
     return {
