@@ -22,12 +22,16 @@ var Client =  {
     var changeSet = {}
     return {
       setValue: function (key, value) {
-        changeSet[key] = {from: state.key, to: value}
+        changeSet[key] = {from: state[key], to: value}
       },
       getLocalState: function () {
         var patch = {}
         Object.keys(changeSet).forEach(function(key){
-          patch[key] = changeSet[key].to
+          if (state[key] === changeSet[key].from) {
+            patch[key] = changeSet[key].to
+          } else {
+            patch[key] = {remote: state[key], local: changeSet[key].to}
+          }
         })
         return Object.assign({}, state, patch)
       },
@@ -108,5 +112,14 @@ describe('Client Server interaction', function () {
     var clientB = Client.start(server)
     clientB.checkServer()
     assert.equal(clientB.getLocalState().foo, 'first')
+
+    clientB.setValue('foo', 'second')
+    clientB.saveChanges()
+
+    clientA.setValue('foo', 'other')
+    clientA.checkServer()
+    assert.deepEqual(clientA.getLocalState().foo, {remote: 'second', local: 'other'})
+    clientA.setValue('foo', 'altogether different')
+    assert.deepEqual(clientA.getLocalState().foo, 'altogether different')
   })
 });
