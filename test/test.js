@@ -54,7 +54,12 @@ describe('Client', function () {
       client.setValue('foo', 'else');
       assert.equal(client.getLocalState().foo, 'else');
     });
-    // Should delete change if changes to some server value
+    xit('should have a clean changeset when returning value to server value', function () {
+      var client = Client.start();
+      client.setValue('foo', 'something');
+      client.setValue('foo');
+      assert.deepEqual(client.getChangeset(), {});
+    });
   });
   describe('saving changes', function () {
     it('should clear changeset is server accepts changes', function () {

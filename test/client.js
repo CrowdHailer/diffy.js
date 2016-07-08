@@ -34,7 +34,6 @@ exports.start = function (server) {
         });
       });
       state = Object.assign({}, state, patch);
-      // console.log(server.getHistory())
     }
   };
 };
