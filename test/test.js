@@ -88,6 +88,7 @@ describe('Client', function () {
       client.setValue('foo', 'else')
       assert.equal(client.getLocalState().foo, 'else')
     });
+    // Should delete change if changes to some server value
   })
   describe('saving changes', function () {
     it('should clear changeset is server accepts changes', function () {
@@ -96,6 +97,7 @@ describe('Client', function () {
       client.saveChanges()
       assert.deepEqual(client.getLocalChanges(), {})
     })
+    // Should not try to save if conflicts remain
   })
 });
 describe('Client Server interaction', function () {
