@@ -60,8 +60,8 @@ function Client () {
   }
 }
 
-function startServer () {
-  var state = {foo: 'initial'}
+function startServer (state) {
+  var state = state || {foo: 'initial'}
   var history = []
   function recordDiff (changes) {
     var key = changes.key
@@ -74,7 +74,7 @@ function startServer () {
       return state
     } else {
       return {
-        status: ''
+        ok: false
       }
     }
   }
@@ -90,26 +90,73 @@ function startServer () {
     }
   }
 }
-describe('A Server', function () {
-  describe('adding diffs to the history', function () {
-    it('should add valid diffs', function () {
-      // Property test reduction of history should always return state
-      var server = startServer()
 
-      var state = server.recordDiff({key: 'foo', from: 'initial', to: 'second'})
-      console.log(state)
-      assert.equal('second', server.getState().foo)
-      assert.equal(1, server.getHistory().length)
+var Server = {
+  start: startServer
+}
 
-      // this should fail
-      server.recordDiff({key: 'foo', from: 'initial', to: 'third'})
-      assert.equal('second', server.getState().foo)
-      assert.equal(1, server.getHistory().length)
-    })
-  })
-})
+Client.start = function (server) {
+  state = {}
+  var localChanges = []
+  return {
+    setValue: function (key, value) {
+      localChanges.push({key: key, from: state.key, to: value})
+    },
+    getLocalState: function () {
+      var patch = {}
+      localChanges.forEach(function(change){
+        patch[change.key] = change.to
+      })
+      return Object.assign({}, state, patch)
+    },
+    saveChanges: function () {
+      if (localChanges[0]) {
+        var response = server.recordDiff(localChanges[0])
+      }
+    },
+    checkServer: function () {
+      var history = server.getHistory()
+      var patch = {}
+      history.forEach(function(change){
+        patch[change.key] = change.to
+      })
+      state = Object.assign({}, state, patch)
+    }
+  }
+}
+
 
 describe('Client Server interaction', function() {
+  it('should follow this story of two halves', function () {
+    var server = Server.start({})
+    assert.equal(0, server.getHistory().length)
+
+    var clientA = Client.start(server)
+    var clientB = Client.start(server)
+
+    // no need for local ordering single patch
+    // Name patch
+    clientA.setValue('foo', 'first')
+    assert.equal(clientA.getLocalState().foo, 'first')
+    // Alternative getValue('foo') -> UNSET
+    assert.equal(clientB.getLocalState().foo, undefined)
+
+    clientA.saveChanges()
+    // Local diff should be clean
+    // central version should change from 0 to 1
+    // version awareness
+
+    clientB.checkServer()
+    assert.equal(clientB.getLocalState().foo, 'first')
+
+    clientB.setValue('foo', 'second')
+    clientB.saveChanges()
+    clientA.setValue('foo', 'other')
+    // assert.throw(function () {
+    //   var response = clientA.saveChanges()
+    //   console.log(response)
+    // })
+  })
   it('should follow this story', function () {
     var canonical = []
     client = Client()
@@ -150,9 +197,27 @@ describe('Client Server interaction', function() {
     assert.deepEqual(client.getState().foo, ['third', 'first'])
     client.resolve('foo', 'third') // Go with server opinion this time
     client.saveEvents(canonical)
-    console.log(canonical)
+    // console.log(canonical)
   })
 });
+describe('A Server', function () {
+  describe('adding diffs to the history', function () {
+    it('should add valid diffs', function () {
+      // Property test reduction of history should always return state
+      var server = startServer()
+
+      var state = server.recordDiff({key: 'foo', from: 'initial', to: 'second'})
+      console.log(state)
+      assert.equal('second', server.getState().foo)
+      assert.equal(1, server.getHistory().length)
+
+      // this should fail
+      server.recordDiff({key: 'foo', from: 'initial', to: 'third'})
+      assert.equal('second', server.getState().foo)
+      assert.equal(1, server.getHistory().length)
+    })
+  })
+})
 describe('Value', function() {
   describe('#update(value, events)', function() {
     it('should return the new value if no conflict', function() {
