@@ -121,8 +121,6 @@ describe('Client Server interaction', function () {
     assert.equal(clientB.getLocalState().foo, 'first');
 
     clientB.setValue('foo', 'second');
-    // var changeset = clientB.getChangeset();
-    // server.saveChangeset(changeset);
     assert.equal(clientA.getLocalState().foo, 'first');
     clientB.saveChangeset();
     assert.equal(clientA.getLocalState().foo, 'first');

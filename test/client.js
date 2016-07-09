@@ -1,13 +1,14 @@
 exports.start = function (server) {
+  'use strict';
   // record latest server timestamp
-  state = {};
-  var changeset = {}; // Patch, Revision
+  var state = Object.freeze({});
+  var changeset = Object.freeze({}); // Patch, Revision
   return {
     setValue: function (key, value) {
       var change = {from: state[key], to: value};
       var tmp = {};
       tmp[key] = change;
-      newChangeset = Object.assign({}, changeset, tmp);
+      var newChangeset = Object.assign({}, changeset, tmp);
       if (change.from === change.to) {
         delete newChangeset[key];
       }
@@ -28,7 +29,7 @@ exports.start = function (server) {
       return changeset;
     },
     saveChangeset: function () {
-      response = server.saveChangeset(changeset);
+      var response = server.saveChangeset(changeset);
       if (response.ok) {
         var patch = {};
         Object.keys(changeset).forEach(function(key){

@@ -3,10 +3,10 @@
 // Saving the same change set twice with different version should always be an error.
 // Might need to modify this for sent more than once messages.
 
-
 exports.start = function () {
+  'use strict';
   // Property test reduction of history should always return state
-  var state = {};
+  var state = Object.freeze({});
   var history = [];
   return {
     getHistory: function () {
