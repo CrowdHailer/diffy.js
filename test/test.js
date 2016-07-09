@@ -48,6 +48,13 @@ describe('Client', function () {
       client.setValue('myKey', 'something');
       assert.equal(client.getLocalState().myKey, 'something');
     });
+    it('should work for multiple values', function () {
+      var client = Client.start();
+      client.setValue('myKey', 'something');
+      client.setValue('myOtherKey', 'other');
+      assert.equal(client.getLocalState().myKey, 'something');
+      assert.equal(client.getLocalState().myOtherKey, 'other');
+    });
     it('should modify the changeset for a second change to a key', function () {
       var client = Client.start();
       client.setValue('myKey', 'something');
