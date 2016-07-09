@@ -68,7 +68,34 @@ describe('Client', function () {
       client.saveChangeset();
       assert.deepEqual(client.getChangeset(), {});
     });
+    it('should have updated values on local state', function () {
+      var client = Client.start({saveChangeset: function () { return {ok: true}; }});
+      client.setValue('foo', 'bar');
+      client.saveChangeset();
+      assert.equal(client.getLocalState().foo, 'bar');
+    });
     // Should not try to save if conflicts remain
+  });
+  describe('checking the server', function () {
+    it('should update local state', function () {
+      var client = Client.start({
+        getHistory: function () {
+          return [{foo: {from: undefined, to: 'existing'}}];
+        }
+      });
+      client.checkServer();
+      assert.equal(client.getLocalState().foo, 'existing');
+    });
+    it('should report conflict from server', function () {
+      var client = Client.start({
+        getHistory: function () {
+          return [{foo: {from: undefined, to: 'existing'}}];
+        }
+      });
+      client.setValue('foo', 'my value');
+      client.checkServer();
+      assert.deepEqual(client.getLocalState().foo, {remote: 'existing', local: 'my value'});
+    });
   });
 });
 describe('Client Server interaction', function () {
@@ -87,7 +114,10 @@ describe('Client Server interaction', function () {
     assert.equal(clientB.getLocalState().foo, 'first');
 
     clientB.setValue('foo', 'second');
+    // var changeset = clientB.getChangeset();
+    // server.saveChangeset(changeset);
     clientB.saveChangeset();
+    assert.equal(clientA.getLocalState().foo, 'first');
 
     clientA.setValue('foo', 'other');
     clientA.checkServer();

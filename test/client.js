@@ -4,7 +4,7 @@ exports.start = function (server) {
   var changeset = {}; // Patch, Revision
   return {
     setValue: function (key, value) {
-      changeset[key] = {from: state[key], to: value};
+      changeset = Object.assign({}, {foo: {from: state[key], to: value}});
     },
     getLocalState: function () {
       var patch = {};
@@ -23,6 +23,15 @@ exports.start = function (server) {
     saveChangeset: function () {
       response = server.saveChangeset(changeset);
       if (response.ok) {
+        var patch = {};
+        Object.keys(changeset).forEach(function(key){
+          if (state[key] === changeset[key].from) {
+            patch[key] = changeset[key].to;
+          } else {
+            patch[key] = {remote: state[key], local: changeset[key].to};
+          }
+        });
+        state = Object.assign({}, state, patch);
         changeset = {};
       }
     },
@@ -34,6 +43,7 @@ exports.start = function (server) {
         });
       });
       state = Object.assign({}, state, patch);
-    }
+    },
+    state: state
   };
 };
