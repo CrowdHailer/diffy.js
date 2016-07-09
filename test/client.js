@@ -4,7 +4,10 @@ exports.start = function (server) {
   var changeset = {}; // Patch, Revision
   return {
     setValue: function (key, value) {
-      changeset = Object.assign({}, {foo: {from: state[key], to: value}});
+      var change = {from: state[key], to: value};
+      var tmp = {};
+      tmp[key] = change;
+      changeset = Object.assign({}, tmp);
     },
     getLocalState: function () {
       var patch = {};

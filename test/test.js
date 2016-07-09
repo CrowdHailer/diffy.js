@@ -14,19 +14,19 @@ describe('Central Server', function () {
   describe('saving a changeset', function () {
     it('should return the new version', function () {
       var server = Server.start();
-      var response = server.saveChangeset({foo: {to: 'initial'}});
+      var response = server.saveChangeset({myKey: {to: 'initial'}});
       assert.equal(response.ok, true);
       assert.equal(response.value, 1);
     });
     it('should apply the changeset to recorded state', function () {
       var server = Server.start();
-      var response = server.saveChangeset({foo: {to: 'initial'}});
+      var response = server.saveChangeset({myKey: {to: 'initial'}});
       assert.equal(response.ok, true);
-      assert.equal(server.getState().foo, 'initial');
+      assert.equal(server.getState().myKey, 'initial');
     });
     it('should not save an invalid changeset', function () {
       var server = Server.start();
-      var response = server.saveChangeset({foo: {from: 'rubbish', to: 'clean'}});
+      var response = server.saveChangeset({myKey: {from: 'rubbish', to: 'clean'}});
       assert.equal(response.ok, false);
     });
   });
@@ -40,24 +40,24 @@ describe('Client', function () {
     });
     it('should be added to the changeset', function () {
       var client = Client.start();
-      client.setValue('foo', 'something');
+      client.setValue('myKey', 'something');
       assert.equal(Object.keys(client.getChangeset()).length, 1);
     });
     it('should change the value locally', function () {
       var client = Client.start();
-      client.setValue('foo', 'something');
-      assert.equal(client.getLocalState().foo, 'something');
+      client.setValue('myKey', 'something');
+      assert.equal(client.getLocalState().myKey, 'something');
     });
     it('should modify the changeset for a second change to a key', function () {
       var client = Client.start();
-      client.setValue('foo', 'something');
-      client.setValue('foo', 'else');
-      assert.equal(client.getLocalState().foo, 'else');
+      client.setValue('myKey', 'something');
+      client.setValue('myKey', 'else');
+      assert.equal(client.getLocalState().myKey, 'else');
     });
     xit('should have a clean changeset when returning value to server value', function () {
       var client = Client.start();
-      client.setValue('foo', 'something');
-      client.setValue('foo');
+      client.setValue('myKey', 'something');
+      client.setValue('myKey');
       assert.deepEqual(client.getChangeset(), {});
     });
   });
@@ -116,6 +116,7 @@ describe('Client Server interaction', function () {
     clientB.setValue('foo', 'second');
     // var changeset = clientB.getChangeset();
     // server.saveChangeset(changeset);
+    assert.equal(clientA.getLocalState().foo, 'first');
     clientB.saveChangeset();
     assert.equal(clientA.getLocalState().foo, 'first');
 
