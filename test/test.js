@@ -61,7 +61,7 @@ describe('Client', function () {
       client.setValue('myKey', 'else');
       assert.equal(client.getLocalState().myKey, 'else');
     });
-    xit('should have a clean changeset when returning value to server value', function () {
+    it('should have a clean changeset when returning value to server value', function () {
       var client = Client.start();
       client.setValue('myKey', 'something');
       client.setValue('myKey');

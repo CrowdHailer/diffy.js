@@ -7,7 +7,11 @@ exports.start = function (server) {
       var change = {from: state[key], to: value};
       var tmp = {};
       tmp[key] = change;
-      changeset = Object.assign({}, changeset, tmp);
+      newChangeset = Object.assign({}, changeset, tmp);
+      if (change.from === change.to) {
+        delete newChangeset[key];
+      }
+      changeset = newChangeset;
     },
     getLocalState: function () {
       var patch = {};
